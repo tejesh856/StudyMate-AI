@@ -13,11 +13,9 @@ import notificationRoutes from './routes/notification.route.js';
 import { setupSocket } from './socket/index.js';
 import connectDB from './config/db.js';
 import { setSocketInstance } from './socket/globalsocket.js';
-import path from "path";
 dotenv.config({ path: `${process.cwd()}/.env` });
 
 const PORT = process.env.PORT || 5000;
-const __dirname = path.resolve();
 
 
 const startServer = async () => {
@@ -46,15 +44,6 @@ const startServer = async () => {
   app.use("/api/quiz", quizRoutes);
   app.use("/api/learn", learnRoutes);
   app.use("/api/notifications", notificationRoutes);
-
-
-  if (process.env.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname, "../frontend/dist")));
-
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
-    });
-  }
 
 
   // Not found handler
