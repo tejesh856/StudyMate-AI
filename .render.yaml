@@ -1,0 +1,62 @@
+services:
+  - type: web
+    name: studymate-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node src/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8000
+      - key: CLIENT_URL
+        sync: false # Set to frontend Render URL
+      - key: MONGO_URI
+        sync: false
+      - key: AUTH_SECRET
+        sync: false
+      - key: QUIZ_SECRET
+        sync: false
+      - key: GROQ_QUIZ_API_KEY
+        sync: false
+      - key: HUGGINGFACE_API_KEY1
+        sync: false
+      - key: HUGGINGFACE_API_KEY2
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        sync: false
+      - key: REDIS_USER
+        sync: false
+      - key: REDIS_PASSWORD
+        sync: false
+      - key: HUGGINGFACE_API_URL
+        sync: false
+      - key: CODING_LANGUAGES_URL
+        sync: false
+      - key: CODING_EXECUTION_URL
+        sync: false
+
+  - type: web
+    name: studymate-frontend
+    env: node
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_MODE
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        sync: false # Set to backend Render URL
