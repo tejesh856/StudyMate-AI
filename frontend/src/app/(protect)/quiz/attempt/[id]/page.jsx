@@ -59,22 +59,22 @@ export default function QuizAttemptPage() {
   } = useQuizStore();
 
   useEffect(() => {
-    if (data) {
+    if (!data?.quiz) return;
       resetQuiz();
       setQuizData(data.quiz);
       connectSocket();
       startQuiz({ quizId: data.quiz._id, userId: data.quiz.studentId });
       restoreAttempt({ quizId: data.quiz._id, userId: data.quiz.studentId });
       if (data.quiz.codingLanguages?.length > 0) {
-        setSelectedLanguage(data.quiz.codingLanguages[0]);
         const firstLang = data.quiz.codingLanguages[0];
+        setSelectedLanguage(data.quiz.codingLanguages[0]);
         getTemplateTrigger({
           language: firstLang.language,
           version: firstLang.version,
         });
       }
 
-    }
+    
   }, [data]);
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export default function QuizAttemptPage() {
     }
   }, [submitted]);
 
-  if (isPending || !quiz || quiz._id !== quizId) {
+  if (isPending || quiz?._id !== quizId) {
     return <div className="text-center text-lg py-10">⏳ Loading quiz...</div>;
   }
 
