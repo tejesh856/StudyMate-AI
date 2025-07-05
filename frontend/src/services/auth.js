@@ -1,9 +1,8 @@
 import { axiosInstance } from "@/lib/axios";
-import axios from "axios";
 
 export const CheckAuth = async () => {
   try {
-    const res = await axios.get("api/auth/check", {
+    const res = await axiosInstance.get("auth/check", {
       withCredentials: true, // 👈 REQUIRED
     });
     console.log(res.data);
@@ -27,7 +26,7 @@ export const Signup = async (data) => {
 };
 export const Login = async (data) => {
   try {
-    const res = await axios.post("api/auth/login", data, {
+    const res = await axiosInstance.post("auth/login", data, {
       withCredentials: true, // 👈 REQUIRED
     });
     console.log(res.data);
@@ -41,7 +40,9 @@ export const Login = async (data) => {
 };
 export const Logout = async () => {
   try {
-    const res = await axios.post("api/auth/logout");
+    const res = await axiosInstance.post("auth/logout",{
+      withCredentials: true, // 👈 REQUIRED
+    });
     console.log(res.data);
     return res.data;
   } catch (error) {
@@ -53,7 +54,9 @@ export const Logout = async () => {
 };
 export const UpdateProfile = async (data) => {
   try {
-    const res = await axiosInstance.post("/auth/update-profile", data);
+    const res = await axiosInstance.post("/auth/update-profile", data,{
+      withCredentials: true, // 👈 REQUIRED
+    });
     console.log(res.data);
     return res.data;
   } catch (error) {

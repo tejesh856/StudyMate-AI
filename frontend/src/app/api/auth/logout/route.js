@@ -1,22 +1,8 @@
-// app/api/auth/logout/route.js
-import { NextResponse } from "next/server";
+import { proxyRequest } from '@/lib/proxyRequest';
 
-export async function POST() {
-  const cookie = req.headers.get("cookie");
-  const backendRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, {
-    method: "POST",
-    headers: {
-      Cookie: cookie,
-    },
+export async function POST(req) {
+  return proxyRequest(req, {
+    backendPath: '/api/auth/logout',
+    method: 'POST',
   });
-
-  const data = await backendRes.json();
-  const response = NextResponse.json(data, { status: backendRes.status });
-
-  const setCookie = backendRes.headers.get("set-cookie");
-  if (setCookie) {
-    response.headers.set("set-cookie", setCookie);
-  }
-
-  return response;
 }
