@@ -6,6 +6,8 @@ export function middleware(req) {
   const quizToken = req.cookies.get("quizToken")?.value;
   const quizId = req.cookies.get("quizId")?.value;
   console.log('auth token',token);
+  const cookieHeader = req.headers.get('cookie');
+  console.log('cookie header',cookieHeader);
   console.log('quiz token',quizToken);
   console.log('quiz id',quizId);
 
