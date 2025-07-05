@@ -1,4 +1,5 @@
 import { axiosInstance } from "@/lib/axios";
+import axios from "axios";
 
 export const CheckAuth = async () => {
   try {
@@ -14,7 +15,7 @@ export const CheckAuth = async () => {
 };
 export const Signup = async (data) => {
   try {
-    const res = await axiosInstance.post("/auth/signup", data);
+    const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/signup`, data);
     console.log(res.data);
     return res.data;
   } catch (error) {
