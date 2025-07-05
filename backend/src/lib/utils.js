@@ -24,7 +24,7 @@ export const generateAuthToken = (userId, res) => {
   res.cookie("authToken", token, {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
-    sameSite: isProduction ? "none" : "lax",
+    sameSite: "none",
     secure: isProduction,
   });
 
