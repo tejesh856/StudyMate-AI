@@ -6,5 +6,6 @@ export async function POST(req) {
     backendPath: '/api/quiz/template',
     method: 'POST',
     body,
+    includeQuizCookies: true,
   });
 }

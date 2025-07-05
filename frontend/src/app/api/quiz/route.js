@@ -4,5 +4,6 @@ export async function GET(req) {
   return proxyRequest(req, {
     backendPath: '/api/quiz',
     method: 'GET',
+    includeQuizCookies: true,
   });
 }
