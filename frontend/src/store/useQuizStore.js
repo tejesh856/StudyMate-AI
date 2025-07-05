@@ -34,9 +34,7 @@ setCodeResults: (questionId, results) => {
 connectSocket: () => {
   if (get().socket) return;
 
-  const newSocket = io(process.env.NEXT_PUBLIC_MODE === "development"
-      ? `${process.env.NEXT_PUBLIC_API_URL}`
-      : "/", { withCredentials: true });
+  const newSocket = io(`${process.env.NEXT_PUBLIC_API_URL}`, { withCredentials: true });
 
   newSocket.on('connect', () => console.log('Socket connected:', newSocket.id));
   newSocket.on('disconnect', () => console.log('Socket disconnected'));
