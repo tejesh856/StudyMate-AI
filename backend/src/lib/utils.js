@@ -17,12 +17,15 @@ export const generateAuthToken = (userId, res) => {
   // Generate the token
   const token = jwt.sign(payload, secret, { expiresIn });
 
+  const isProduction = process.env.NODE_ENV === "production";
+
+
   // Send the token as a response (optional: store it in a cookie)
   res.cookie("authToken", token, {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
-    sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
   });
 
   return token;
@@ -35,13 +38,13 @@ export const generateQuizToken = (quiz, res) => {
 
   // Generate the token
   const token = jwt.sign(payload, secret, { expiresIn });
-
+  const isProduction = process.env.NODE_ENV === "production";
   // Send the token as a response (optional: store it in a cookie)
   res.cookie("quizToken", token, {
     maxAge: 10 * 60 * 1000,
     httpOnly: true,
-    sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
   });
   res.cookie("quizId", String(quiz._id), {
     maxAge: 10 * 60 * 1000,
