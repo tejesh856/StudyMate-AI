@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req) {
   const body = await req.json();
-  const cookie = req.headers.get("authToken");
+  const cookie = req.headers.get("cookie");
   try {
     const backendRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
       method: 'POST',

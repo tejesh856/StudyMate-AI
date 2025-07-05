@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
-  const cookie = req.headers.get("authToken");
+  const cookie = req.headers.get("cookie");
   const backendRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/check`, {
     method: "GET",
     headers: {
