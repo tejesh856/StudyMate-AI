@@ -3,7 +3,7 @@ import axios from "axios";
 
 export const CheckAuth = async () => {
   try {
-    const res = await axiosInstance.get("/auth/check");
+    const res = await axios.get("api/auth/check");
     console.log(res.data);
     return res.data;
   } catch (error) {
@@ -37,7 +37,7 @@ export const Login = async (data) => {
 };
 export const Logout = async () => {
   try {
-    const res = await axiosInstance.post("/auth/logout");
+    const res = await axios.post("api/auth/logout");
     console.log(res.data);
     return res.data;
   } catch (error) {
