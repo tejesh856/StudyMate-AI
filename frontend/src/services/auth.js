@@ -3,7 +3,9 @@ import axios from "axios";
 
 export const CheckAuth = async () => {
   try {
-    const res = await axios.get("api/auth/check");
+    const res = await axios.get("api/auth/check", {
+      withCredentials: true, // 👈 REQUIRED
+    });
     console.log(res.data);
     return res.data;
   } catch (error) {
@@ -25,7 +27,9 @@ export const Signup = async (data) => {
 };
 export const Login = async (data) => {
   try {
-    const res = await axios.post("api/auth/login", data);
+    const res = await axios.post("api/auth/login", data, {
+      withCredentials: true, // 👈 REQUIRED
+    });
     console.log(res.data);
     return res.data;
   } catch (error) {
