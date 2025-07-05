@@ -7,6 +7,7 @@ import { findSimilarCourseTopic } from "../langchain/learn/findSimilarCourseTopi
 import Course from "../models/Course.model.js";
 import Progress from "../models/Progress.model.js";
 import { generateImageFromTopic } from "../services/imageGeneration.js";
+import { startEnrichCourseWorker } from "../workers/enrichCourseWorker.js";
 export const CourseFlowGenerate = async (req, res, next) => {
   const { topicTitle, description, difficulty, numofchapters, includevideo, _id = null } = req.body;
   const studentId = req.user._id;
