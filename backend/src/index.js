@@ -13,6 +13,7 @@ import notificationRoutes from './routes/notification.route.js';
 import { setupSocket } from './socket/index.js';
 import connectDB from './config/db.js';
 import { setSocketInstance } from './socket/globalsocket.js';
+import { startEnrichCourseWorker } from './workers/enrichCourseWorker.js';
 dotenv.config({ path: `${process.cwd()}/.env` });
 
 const PORT = process.env.PORT || 5000;
@@ -39,6 +40,7 @@ const startServer = async () => {
   app.use(cookieParser());
 
   await connectDB();
+  startEnrichCourseWorker();
 
   app.use("/api/auth", authRoutes);
   app.use("/api/quiz", quizRoutes);

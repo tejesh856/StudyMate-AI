@@ -7,7 +7,6 @@ import { findSimilarCourseTopic } from "../langchain/learn/findSimilarCourseTopi
 import Course from "../models/Course.model.js";
 import Progress from "../models/Progress.model.js";
 import { generateImageFromTopic } from "../services/imageGeneration.js";
-import { startEnrichCourseWorker } from "../workers/enrichCourseWorker.js";
 export const CourseFlowGenerate = async (req, res, next) => {
   const { topicTitle, description, difficulty, numofchapters, includevideo, _id = null } = req.body;
   const studentId = req.user._id;
@@ -135,7 +134,6 @@ export const generateCourseMaterial = async (req, res, next) => {
       }
 
       //const enrichedChapters = await enrichChapters(chapters, difficulty,existingCourse.subject,existingCourse.languageOrDomain);
-      startEnrichCourseWorker();
       await enrichCourseQueue.add('enrichCourse', {
         courseId,
         chapters,
@@ -200,7 +198,6 @@ export const generateCourseMaterial = async (req, res, next) => {
       //chapters: enrichedChapters,
       createdAt: new Date(),
     });
-    startEnrichCourseWorker();
     await enrichCourseQueue.add("enrichCourse", {
       courseId: newCourse._id.toString(),
       chapters,
