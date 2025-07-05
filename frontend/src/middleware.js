@@ -5,6 +5,9 @@ export function middleware(req) {
   const token = req.cookies.get("authToken")?.value;
   const quizToken = req.cookies.get("quizToken")?.value;
   const quizId = req.cookies.get("quizId")?.value;
+  console.log('auth token',token);
+  console.log('quiz token',quizToken);
+  console.log('quiz id',quizId);
 
   const isAuth = !!token;
   const isPublicPage = ["/", "/login", "/signup"].includes(url.pathname);
