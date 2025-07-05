@@ -134,6 +134,7 @@ export const generateCourseMaterial = async (req, res, next) => {
       }
 
       //const enrichedChapters = await enrichChapters(chapters, difficulty,existingCourse.subject,existingCourse.languageOrDomain);
+      startEnrichCourseWorker();
       await enrichCourseQueue.add('enrichCourse', {
         courseId,
         chapters,
@@ -198,6 +199,7 @@ export const generateCourseMaterial = async (req, res, next) => {
       //chapters: enrichedChapters,
       createdAt: new Date(),
     });
+    startEnrichCourseWorker();
     await enrichCourseQueue.add("enrichCourse", {
       courseId: newCourse._id.toString(),
       chapters,
