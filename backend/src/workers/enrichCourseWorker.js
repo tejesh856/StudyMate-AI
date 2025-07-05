@@ -1,10 +1,10 @@
 // workers/enrichCourseWorker.js
 import { Worker } from 'bullmq';
-import { enrichChapters } from '../utils/enrichChapters.js';
 import Course from '../models/Course.model.js';
 import { client } from '../lib/redisClient.js';
 import { io } from '../socket/globalsocket.js';
 import Notifications from '../models/Notifications.model.js';
+import { enrichChapters } from '../lib/utils.js';
 
 let enrichCourseWorker = null;
 
