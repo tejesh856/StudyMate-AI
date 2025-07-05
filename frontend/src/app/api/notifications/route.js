@@ -1,9 +1,8 @@
 import { proxyRequest } from '@/lib/proxyRequest';
 
-export async function PATCH(req, { params }) {
-  const { id } = params;
+export async function GET(req) {
   return proxyRequest(req, {
-    backendPath: `/api/notifications/${id}/read`,
-    method: 'PATCH',
+    backendPath: '/api/notifications',
+    method: 'GET',
   });
 }
