@@ -9,7 +9,7 @@ export async function proxyRequest(req, {
   headers = {},
   includeQuizCookies = false, // 👈 custom flag
 }) {
-  const cookieStore = cookies();
+  const cookieStore =await cookies();
 
   const authToken = cookieStore.get('authToken');
   const quizToken = includeQuizCookies ? cookieStore.get('quizToken') : null;
@@ -24,6 +24,7 @@ export async function proxyRequest(req, {
     .join('; ');
 
   const backendURL = `${process.env.NEXT_PUBLIC_API_URL}${backendPath}`;
+  console.log('backend url',backendURL);
 
   const requestHeaders = {
     ...headers,

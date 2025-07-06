@@ -5,11 +5,13 @@ import { client } from '../lib/redisClient.js';
 import { io } from '../socket/globalsocket.js';
 import Notifications from '../models/Notifications.model.js';
 import { enrichChapters } from '../lib/utils.js';
+import connectDB from '../config/db.js';
 
 let enrichCourseWorker = null;
 
-export const startEnrichCourseWorker = () => {
+const startEnrichCourseWorker = () => {
   if (enrichCourseWorker) return; // ⛔ Don't start again
+
 
   enrichCourseWorker = new Worker(
     'enrichCourse',
@@ -17,6 +19,8 @@ export const startEnrichCourseWorker = () => {
       const { courseId, chapters, difficulty, subject, domain, includeVideo } = job.data;
 
       try {
+        console.log('job started');
+        console.log('🧪 Received job:', job.data);
         const enrichedChapters = await enrichChapters(chapters, difficulty, subject, domain, includeVideo);
 
         await Course.findByIdAndUpdate(courseId, {
@@ -48,6 +52,18 @@ export const startEnrichCourseWorker = () => {
     },
     { connection: client }
   );
+  enrichCourseWorker.on('completed', (job) => {
+  console.log(`🎉 Job ${job.id} completed`);
+});
+
+enrichCourseWorker.on('failed', (job, err) => {
+  console.error(`💥 Job ${job.id} failed:`, err);
+});
+
 
   console.log('✅ enrichCourseWorker started.');
+};
+export const init = async () => {
+  await connectDB(); // Make sure DB is connected
+  startEnrichCourseWorker();
 };

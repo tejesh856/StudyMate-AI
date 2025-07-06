@@ -18,7 +18,6 @@ export const QuizGenerate = async (req, res, next) => {
 
     if (!topic || topic.trim() === '') {
       throw createError(400, `Topic is required`)
-      //return res.status(400).json({ success: false, message: 'Topic is required' });
     }
 
     const trimmedTopic = topic.trim();
@@ -28,10 +27,6 @@ export const QuizGenerate = async (req, res, next) => {
     const analysis = await analyzeTopic(trimmedTopic);
     if (!analysis.valid) {
       throw createError(400, `Invalid topic: ${analysis.reason || 'unknown reason'}`)
-      /*return res.status(400).json({
-        success: false,
-        message: `Invalid topic: ${analysis.reason || 'unknown reason'}`,
-      });*/
     }
 
     const isCoding = analysis.isCoding === true;
@@ -150,7 +145,6 @@ export const ReviewQuizAttempt = async (req, res, next) => {
     console.log('attempts',attempts);
     if (!attempts || attempts.length === 0) {
       throw createError(400, `No attempts found for this quiz'}`)
-      //return res.status(404).json({ success: false, message: 'No attempts found for this quiz' });
     }
     const attempt = attempts[0];
 const hasReview =
@@ -207,7 +201,6 @@ export const GetTemplate = async (req, res, next) => {
 
     if (!language || !version) {
       throw createError(400, `Language and version are required`)
-      //return res.status(400).json({ success: false, message: 'Language and version are required' });
     }
 
     // Check if template already exists
@@ -222,7 +215,6 @@ export const GetTemplate = async (req, res, next) => {
     // If no coding question or empty, cannot generate
     if (!quiz.coding || quiz.coding.length === 0) {
       throw createError(400, `No coding question available to generate template`)
-      //return res.status(400).json({ success: false, message: 'No coding question available to generate template' });
     }
 
     const codingQuestion = quiz.coding[0];

@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import Quiz from "../models/quiz.model.js";
 import axios from "axios";
 import { z } from 'zod';
+import { generateCourseSubChapter } from "../langchain/learn/generateCourseSubChapter.js";
 dotenv.config({ path: `${process.cwd()}/.env` });
 
 export const generateAuthToken = (userId, res) => {
@@ -24,7 +25,7 @@ export const generateAuthToken = (userId, res) => {
   res.cookie("authToken", token, {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
-    sameSite: "none",
+    sameSite: isProduction ? "none" : "strict",
     secure: isProduction,
   });
 
@@ -43,14 +44,14 @@ export const generateQuizToken = (quiz, res) => {
   res.cookie("quizToken", token, {
     maxAge: 10 * 60 * 1000,
     httpOnly: true,
-    sameSite: isProduction ? "none" : "lax",
+    sameSite: isProduction ? "none" : "strict",
     secure: isProduction,
   });
   res.cookie("quizId", String(quiz._id), {
     maxAge: 10 * 60 * 1000,
     httpOnly: true,
-    sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: isProduction ? "none" : "strict",
+    secure: isProduction,
   });
 
   return token;

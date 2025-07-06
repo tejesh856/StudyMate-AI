@@ -13,7 +13,6 @@ export const CourseFlowGenerate = async (req, res, next) => {
 
   if (!topicTitle || !difficulty || !numofchapters || includevideo === undefined) {
     throw createError(400, "Missing required fields")
-    //return res.status(400).json({ success: false, message: "Missing required fields" });
   }
 
   try {
@@ -26,7 +25,6 @@ export const CourseFlowGenerate = async (req, res, next) => {
       previousCourse = await Course.findById(_id).lean();
       if (!previousCourse) {
         throw createError(404, "Course not found")
-        //return res.status(404).json({ success: false, message: "Course not found" });
       }
 
       topicChanged = previousCourse.topicTitle.trim().toLowerCase() !== topicTitle.trim().toLowerCase();
@@ -54,23 +52,12 @@ export const CourseFlowGenerate = async (req, res, next) => {
     if (!_id || topicChanged) {
       const analysis = await analyzeCourseTopic(topicTitle);
       if (!analysis.valid) {
-        throw createError(400, `Invalid topic: ${analysis.reason || "The topic is too vague or unclear for a course."}`)
-        /*return res.status(400).json({
-          success: false,
-          message: `Invalid topic: ${analysis.reason || "The topic is too vague or unclear for a course."}`,
-        });*/
-        
+        throw createError(400, `Invalid topic: ${analysis.reason || "The topic is too vague or unclear for a course."}`)        
       }
 
       const existing = await findSimilarCourseTopic(topicTitle, studentId);
       if (existing) {
-        /*return res.status(409).json({
-          success: false,
-          message: `This topic is already covered or closely related to "${existing.topic}".`,
-          reason: existing.reason,
-        });*/
         throw createError(400, `This topic is already covered or closely related to "${existing.topic}`)
-
       }
       subject=analysis.subject;
       domain=analysis.languageOrDomain;
@@ -112,7 +99,6 @@ export const generateCourseMaterial = async (req, res, next) => {
 
   if (!course || !course.chapters?.length) {
     throw createError(400, `Invalid course data`)
-    //return res.status(400).json({ success: false, message: "Invalid course data" });
   }
 
   const {
@@ -130,18 +116,17 @@ export const generateCourseMaterial = async (req, res, next) => {
       const existingCourse = await Course.findById(courseId);
       if (!existingCourse) {
         throw createError(404, `Course not found for regeneration`)
-        //return res.status(404).json({ success: false, message: "Course not found for regeneration" });
       }
 
-      //const enrichedChapters = await enrichChapters(chapters, difficulty,existingCourse.subject,existingCourse.languageOrDomain);
-      await enrichCourseQueue.add('enrichCourse', {
+      enrichCourseQueue.add('enrichCourse', {
         courseId,
         chapters,
         difficulty: existingCourse.difficulty,
         subject: existingCourse.subject,
         domain: existingCourse.languageOrDomain,
         includeVideo: existingCourse.includevideo,
-      });
+      })
+
       // Update fields
       existingCourse.topicTitle = topicTitle;
       existingCourse.description = description;
@@ -159,25 +144,14 @@ export const generateCourseMaterial = async (req, res, next) => {
     const analysis = await analyzeCourseTopic(topicTitle);
     if (!analysis.valid) {
       throw createError(400, `Invalid topic: ${analysis.reason || "The topic is too vague or unclear for a course."}`)
-      /*return res.status(400).json({
-        success: false,
-        message: `Invalid topic: ${analysis.reason || "Topic is too vague for a course."}`,
-      });*/
     }
 
     // Step 2: Check for similar topics
     const similar = await findSimilarCourseTopic(topicTitle, studentId);
     if (similar) {
       throw createError(400, `This topic is already covered or closely related to "${similar.topic}`)
-      /*return res.status(409).json({
-        success: false,
-        message: `This topic is already covered or closely related to "${similar.topic}".`,
-        reason: similar.reason,
-      });*/
     }
 
-    // Step 3: Generate study material
-    //const enrichedChapters = await enrichChapters(chapters, difficulty,analysis.subject,analysis.languageOrDomain);
     
     // Step 4: Generate image for course
     const keywordPrompt = analysis.languageOrDomain?.trim() || (await extractCourseKeyword(topicTitle));
@@ -198,7 +172,7 @@ export const generateCourseMaterial = async (req, res, next) => {
       //chapters: enrichedChapters,
       createdAt: new Date(),
     });
-    await enrichCourseQueue.add("enrichCourse", {
+    enrichCourseQueue.add("enrichCourse", {
       courseId: newCourse._id.toString(),
       chapters,
       difficulty,
@@ -206,6 +180,7 @@ export const generateCourseMaterial = async (req, res, next) => {
       domain: analysis.languageOrDomain,
       includeVideo: includevideo,
     });
+
 
     return res.status(201).json({ success: true, data: newCourse });
 
@@ -270,14 +245,12 @@ export const getCourse = async (req, res) => {
 
   if (!id) {
     throw createError(400, `Missing course ID`)
-    //return res.status(400).json({ success: false, message: "Missing course ID" });
   }
 
   try {
     const course = await Course.findById(id).lean();
 
     if (!course) {
-      //return res.status(404).json({ success: false, message: "Course not found" });
       throw createError(400, `Course not found`)
     }
 
@@ -310,7 +283,6 @@ export const updateCourse = async (req, res) => {
 
     if (!existingCourse) {
       throw createError(400, `Course not found`)
-      //return res.status(404).json({ success: false, message: 'Course not found' });
     }
 
     const updatedCourse = await Course.findByIdAndUpdate(id, updateData, {
@@ -333,7 +305,6 @@ export const markSubChapterComplete = async (req, res) => {
 
   if (!courseId || !subChapterId) {
     throw createError(400, `Missing courseId or subChapterId`)
-    //return res.status(400).json({ success: false, message: "Missing courseId or subChapterId" });
   }
 
   try {

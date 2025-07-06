@@ -14,18 +14,26 @@ export default function CourseFlowModal({ courseFlowData, onClose }) {
     mutationFn: generateCourse,
     onSuccess: (data) => {
       const generatedCourse = data.data;
+      console.log('generated course',generatedCourse);
       queryClient.setQueryData(['courses'], (oldData) => {
         if (!oldData.data) return [generatedCourse];
         console.log('old data',oldData);
         console.log('new data',generatedCourse);
 
         const exists = oldData.data.find((c) => c._id === generatedCourse._id);
+        console.log('exist',exists);
       if (exists) {
-        return oldData.data.map((c) =>
-          c._id === generatedCourse._id ? { ...c, status: 'pending' } : c
-        );
+        const updatedData = oldData.data.map((c) =>
+      c._id === generatedCourse._id ? { ...c, status: 'pending' } : c
+    );
+    console.log('updated data',updatedData);
+    return { ...oldData, data: updatedData };
       }
-        return [...oldData.data, { ...generatedCourse, status: 'pending' }];
+
+      return {
+    ...oldData,
+    data: [...oldData.data, { ...generatedCourse, status: 'pending' }],
+  };
       });
       /*queryClient.setQueryData(['notifications'], (old = []) => [
         {

@@ -64,7 +64,6 @@ export default function Navbar({ onToggleSidebar }) {
   const isHome = pathname === '/';
   const isLoginOrSignup = pathname === '/login' || pathname === '/signup';
   const isLoggedIn = !!authUser;
-  console.log('islogged in',isLoggedIn);
 
   return (
     <header className="navbar sticky top-0 z-40 bg-base-100/70 backdrop-blur-lg shadow-md border-b border-base-300 px-6 py-3">
@@ -161,7 +160,7 @@ export default function Navbar({ onToggleSidebar }) {
                 {notification.title}
               </p>
               {!notification.read && (
-                <span className="badge badge-xs bg-primary text-base-content animate-pulse">
+                <span style={{padding:'0.25rem'}} className="badge badge-xs bg-primary text-base-content animate-pulse">
                   New
                 </span>
               )}
