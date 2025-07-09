@@ -167,7 +167,6 @@ socket.on('run_code', async ({ quizId, userId, questionId, code, language,versio
   const testCases = question.testCases || [];
 
   const results = [];
-  console.log('testCases', testCases);
   for (const test of testCases) {
     const { input, output: expected } = test;
 const stdin = Array.isArray(test.input) ? test.input.join(' ') : test.input;
@@ -179,7 +178,6 @@ const { output: actual, success } = await runCodeWithPiston({ language, code, in
       output: actual,
       passed: success && isJsonEqual(actual, expected),
     });
-    console.log(`Test case: ${input}, Expected: ${expected}, Output: ${actual}, Passed: ${success && isJsonEqual(actual, expected)}`);
   }
 
   // Save in active memory

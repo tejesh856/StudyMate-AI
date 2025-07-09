@@ -61,17 +61,5 @@ const CourseSchema = new mongoose.Schema({
     default: null,
   },
 });
-/*CourseSchema.post("save", async function (doc, next) {
-  try {
-    // Update the corresponding CourseFlow with the newly created course's ID
-    await CourseFlow.findByIdAndUpdate(doc.courseFlowId, {
-      courseId: doc._id,
-    });
-    next();
-  } catch (error) {
-    console.error("Error updating CourseFlow with courseId:", error);
-    next(error);
-  }
-});*/
 
 export default mongoose.model("Course", CourseSchema);

@@ -17,14 +17,12 @@ export default function SignupPage() {
     },
     onSuccess: (data) => {
       toast.success("Signup successful! 🎉");
-      console.log("Success:", data);
     },
   });
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
 
   const onSubmit = async (data) => {
-    console.log('Form submitted:', data);
     createSignupTrigger(data);
   };
 
@@ -96,12 +94,17 @@ export default function SignupPage() {
                 style={{ paddingLeft: '2.5rem',paddingRight: '2.5rem' }}
                 className={`input input-bordered w-full ${errors.password ? 'input-error' : ''}`}
                 {...register('password', {
-                  required: 'Password is required',
-                  minLength: {
-                    value: 6,
-                    message: 'Password must be at least 6 characters',
-                  },
-                })}
+  required: 'Password is required',
+  minLength: {
+    value: 8,
+    message: 'Password must be at least 8 characters',
+  },
+  pattern: {
+    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/,
+    message: 'Password must include uppercase, lowercase, number, and special character',
+  },
+})}
+
               />
               <button
                 type="button"

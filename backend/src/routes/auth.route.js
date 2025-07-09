@@ -5,6 +5,7 @@ import {
   Logout,
   updateProfile,
   checkAuth,
+  updatePassword,
 } from "../controller/auth.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
 const router = express.Router();
@@ -16,6 +17,7 @@ router.post("/logout", Logout);
 
 //update profile
 router.post("/update-profile", protectRoute, updateProfile);
+router.post("/update-password", protectRoute, updatePassword);
 
 //check authentication
 router.get("/check", protectRoute, checkAuth);

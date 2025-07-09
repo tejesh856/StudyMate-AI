@@ -3,21 +3,40 @@ import Link from 'next/link';
 import {
   ListChecks,
   History,
-  Sparkles,
   PlayCircle,
 } from 'lucide-react';
+import { useAuthStore } from '@/store/useAuthStore';
+import { toTitleCase } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { getProgressResume, getStats } from '@/services/dashboard';
+import StatsSection from '@/components/dashboard/StatsSection';
+import SuggestionsSection from '@/components/dashboard/SuggestionSection';
+import ResumeSection from '@/components/dashboard/ResumeCourses';
 
-
-
-const stats = [
-  { label: 'Courses Completed', value: 4 },
-  { label: 'Quizzes Taken', value: 15 },
-  { label: 'Learning Streak', value: '5 days' },
-  { label: 'AI Suggestions', value: 3 },
-];
 
 export default function DashboardPage() {
- 
+  const {authUser}=useAuthStore();
+  const { data: resumeData, isPending: resumeLoading, error: resumeError } = useQuery({
+  queryKey: ['resume-progress'],
+  queryFn: getProgressResume,
+  refetchOnWindowFocus:false
+  
+});
+
+const { data: statsData, isPending: statsLoading, error: statsError } = useQuery({
+  queryKey: ['stats'],
+  queryFn: getStats,
+  refetchOnWindowFocus:false
+});
+
+const stats =statsData?.stats
+  ? [
+      { label: 'Courses Completed', value: statsData.stats.coursesCompleted },
+      { label: 'Quizzes Taken', value: statsData.stats.totalQuizzesTaken },
+      { label: 'Learning Streak', value: `${statsData.stats.learningStreak} day${statsData.stats.learningStreak > 1 ? 's' : ''}` },
+      { label: 'AI Suggestions', value: statsData.stats.aiSuggestionCount },
+    ]
+  : [];
 
   return (
    
@@ -25,16 +44,16 @@ export default function DashboardPage() {
           {/* Dashboard Header */}
         <div style={{ marginBottom: '2rem' }} className=" flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 style={{ marginBottom: '0.5rem' }} className="text-3xl font-bold text-primary">Welcome back 👋</h1>
+<h1 className="text-4xl font-bold text-primary">Welcome back, <span className="text-secondary">{authUser?.name ? toTitleCase(authUser.name) : "User"}</span> 👋</h1>
             <p className="text-base-content/70">
               Your personalized AI-powered learning dashboard
             </p>
           </div>
           <div className="flex gap-3">
-            <Link href="/dashboard/learn" style={{ paddingLeft: '1rem', paddingRight: '1rem' }} className="btn btn-primary btn-sm flex items-center gap-2">
+            <Link href="/learn" style={{ paddingLeft: '1rem', paddingRight: '1rem' }} className="btn btn-primary btn-sm flex items-center gap-2">
               <PlayCircle size={18} /> Start Learning
             </Link>
-            <Link href="/dashboard/quiz" style={{ paddingLeft: '1rem', paddingRight: '1rem' }} className="btn btn-secondary btn-sm flex items-center gap-2">
+            <Link href="/quiz" style={{ paddingLeft: '1rem', paddingRight: '1rem' }} className="btn btn-secondary btn-sm flex items-center gap-2">
               <ListChecks size={18} /> Take a Quiz
             </Link>
           </div>
@@ -42,28 +61,22 @@ export default function DashboardPage() {
 
         {/* Stats Cards */}
         <div style={{ padding: '2.5rem' }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat) => (
-            <div key={stat.label} className="card bg-base-100 shadow-md">
-              <div className="card-body items-center text-center">
-                <div className="text-3xl font-bold text-primary">{stat.value}</div>
-                <div className="text-base-content/70">{stat.label}</div>
-              </div>
-            </div>
-          ))}
+          <StatsSection
+        stats={stats}
+        isLoading={statsLoading}
+        error={statsError}
+      />
+
+
+          
+
         </div>
 
         {/* AI Suggestions */}
-        <div style={{ marginBottom: '2.5rem' }}>
-          <h2 style={{ marginBottom: '1rem' }} className="text-xl font-semibold flex items-center gap-2">
-            <Sparkles className="text-secondary" /> AI Suggestions for You
-          </h2>
-          <ul className="list-disc ml-6 space-y-2 text-base-content">
-            <li>Review your last quiz on <span className="font-semibold text-primary">Photosynthesis</span></li>
-            <li>Try a new course: <span className="font-semibold text-primary">Introduction to Calculus</span></li>
-            <li>Practice with 5 new AI-generated questions</li>
-            <li>Watch a summary video for <span className="font-semibold text-primary">World War II</span></li>
-          </ul>
-        </div>
+        <SuggestionsSection
+  suggestions={statsData?.suggestions}
+  isLoading={statsLoading}
+/>
 
         {/* Resume Learning */}
 <div>
@@ -71,60 +84,22 @@ export default function DashboardPage() {
     <h2 className="text-xl font-semibold flex items-center gap-2">
       <History size={20} /> Resume Learning
     </h2>
-    <Link href="/dashboard/history" className="text-primary hover:underline text-sm font-medium">
+    <Link href="/learn" className="text-primary hover:underline text-sm font-medium">
       View All
     </Link>
   </div>
 
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    {/* Example Card 1 */}
-    <div className="card bg-base-100 shadow-md overflow-hidden">
-      <figure className="h-40 overflow-hidden">
-        <img src="/algebra.jpg" alt="Algebra Basics" className="w-full h-full object-cover" />
-      </figure>
-      <div className="card-body">
-        <h3 className="text-lg font-semibold">Algebra Basics</h3>
-        <p style={{ marginBottom: '0.5rem' }} className="text-sm text-base-content/70">Quiz • June 10, 2025</p>
-        <progress style={{ marginBottom: '0.5rem' }} className="progress progress-success w-full" value={100} max="100"></progress>
-        <div className="flex justify-between items-center">
-          <span className="badge badge-success">Completed</span>
-          <button className="btn btn-sm btn-primary">Continue</button>
-        </div>
-      </div>
-    </div>
+  
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <ResumeSection
+    resumeData={resumeData?.data}
+    isLoading={resumeLoading}
+    error={resumeError}
+  />
+</div>
 
-    {/* Example Card 2 */}
-    <div className="card bg-base-100 shadow-md overflow-hidden">
-      <figure className="h-40 overflow-hidden">
-        <img src="/algebra.jpg" alt="Photosynthesis" className="w-full h-full object-cover" />
-      </figure>
-      <div className="card-body">
-        <h3 className="text-lg font-semibold">Photosynthesis</h3>
-        <p style={{ marginBottom: '0.5rem' }} className="text-sm text-base-content/70">Video Lesson • June 9, 2025</p>
-        <progress style={{ marginBottom: '0.5rem' }} className="progress progress-info w-full" value={100} max="100"></progress>
-        <div className="flex justify-between items-center">
-          <span className="badge badge-info">Watched</span>
-          <button className="btn btn-sm btn-primary">Continue</button>
-        </div>
-      </div>
-    </div>
 
-    {/* Example Card 3 */}
-    <div className="card bg-base-100 shadow-md overflow-hidden">
-      <figure className="h-40 overflow-hidden">
-        <img src="/algebra.jpg" alt="World War II" className="w-full h-full object-cover" />
-      </figure>
-      <div className="card-body">
-        <h3 className="text-lg font-semibold">World War II</h3>
-        <p style={{ marginBottom: '0.5rem' }} className="text-sm text-base-content/70">Practice • June 8, 2025</p>
-        <progress style={{ marginBottom: '0.5rem' }} className="progress progress-warning w-full" value={60} max="100"></progress>
-        <div style={{ padding: '0.5rem' }} className="flex justify-between items-center">
-          <span className="badge badge-warning">In Progress</span>
-          <button className="btn btn-sm btn-primary">Continue</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  
 </div>
 
         </div>

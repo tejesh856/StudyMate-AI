@@ -1,20 +1,29 @@
 'use client';
 
-import Navigation from "@/components/Navigation";
-import SubChapterCard from "@/components/SubChapterCard";
-import { getCourse, getCourseProgress, markSubChapterComplete } from "@/services/learn";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import Navigation from "@/components/learn/Navigation";
+import SubChapterCard from "@/components/learn/SubChapterCard";
+import { getCourse, markSubChapterComplete, updateProgress } from "@/services/learn";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 export default function StudyMaterialPage() {
   const { id: courseId } = useParams();
+  const queryClient = useQueryClient();
+
   const { data, isPending, error } = useQuery({
     queryKey: ['course', courseId],
     queryFn: () => getCourse(courseId),
     enabled: !!courseId,
+    refetchOnWindowFocus: false,
   });
+
+  const { mutate: updateProgressTrigger } = useMutation({
+  mutationFn: updateProgress,
+  onError: () => toast.error("Failed to update course progress"),
+});
+
 
 
   const {mutate:markSubChapterTrigger,isPending:ismarkSubChapterPending}=useMutation({
@@ -49,14 +58,68 @@ export default function StudyMaterialPage() {
       onSuccess: () => {
         toast.success("Marked as completed!");
         setCompletedSubChapters((prev) => [...prev, subChapterId]);
+        updateProgressTrigger({
+          courseId,
+          chapterIdx: currentChapterIdx,
+          subChapterId,
+        });
+        queryClient.invalidateQueries({ queryKey: ['stats'] });
+        queryClient.invalidateQueries({ queryKey: ['resume-progress'] });
       },
     }
   );
 };
 
 
-  if (isPending) return <div style={{ marginTop: '2.5rem' }} className="text-center text-lg font-semibold">📚 Loading study materials...</div>;
-  if (error) return <div className="text-error text-center">Error loading course</div>;
+if (isPending) {
+  return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-6">
+      <div className="relative w-24 h-24">
+        <div className="absolute inset-0 animate-spin rounded-full border-t-4 border-b-4 border-primary"></div>
+        <div className="absolute inset-4 rounded-full bg-base-100 flex items-center justify-center shadow-md">
+          <span className="text-3xl">📘</span>
+        </div>
+      </div>
+      <div className="text-center">
+        <p className="text-lg font-semibold text-primary animate-pulse">Loading Study Materials...</p>
+        <p className="text-sm text-base-content/70 italic">Please wait while we fetch your course.</p>
+      </div>
+    </div>
+  );
+}
+  if (error) {
+  return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-6">
+      <div className="text-error">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-16 w-16 animate-bounce"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 9v2m0 4h.01M5.5 4.5l13 13m-13 0l13-13M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-error">Oops! Something went wrong</h2>
+        <p className="text-base-content/70 mt-2 italic">We couldn't load your course. Please try again later.</p>
+      </div>
+      <button
+        className="btn btn-outline btn-error"
+        onClick={() => window.location.reload()}
+      >
+        🔄 Retry
+      </button>
+    </div>
+  );
+}
+
   
   return (
   <div style={{ padding: '2rem', margin: '0 auto' }} className="max-w-8xl">

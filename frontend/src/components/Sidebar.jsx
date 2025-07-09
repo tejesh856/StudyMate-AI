@@ -32,9 +32,8 @@ export default function Sidebar({ isOpen, onClose }) {
     { name: 'Dashboard', icon: <Home size={20} />, href: '/dashboard' },
     { name: 'Learn', icon: <BookOpen size={20} />, href: '/learn' },
     { name: 'Quiz', icon: <ListChecks size={20} />, href: '/quiz' },
-    { name: 'History', icon: <History size={20} />, href: '/dashboard/history' },
-    { name: 'Profile', icon: <User size={20} />, href: '/dashboard/profile' },
-    { name: 'Settings', icon: <Settings size={20} />, href: '/dashboard/settings' },
+    { name: 'Profile', icon: <User size={20} />, href: '/profile' },
+    { name: 'Settings', icon: <Settings size={20} />, href: '/settings' }
   ];
 
   if (!authUser || quizData) return null;

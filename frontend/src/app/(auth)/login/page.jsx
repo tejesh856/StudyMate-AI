@@ -21,7 +21,6 @@ export default function LoginPage() {
     },
     onSuccess: (data) => {
       toast.success("Login successful! 🎉");
-      console.log("Success:", data);
       setAuthUser(data.user);
       router.push("/dashboard");
     },
@@ -29,7 +28,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
   const onSubmit = async (data) => {
-    console.log('Login submitted:', data);
     createloginTrigger(data);
   };
 
@@ -82,12 +80,17 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 className={`input input-bordered w-full ${errors.password ? 'input-error' : ''}`}
                 {...register('password', {
-                  required: 'Password is required',
-                  minLength: {
-                    value: 6,
-                    message: 'Password must be at least 6 characters',
-                  },
-                })}
+  required: 'Password is required',
+  minLength: {
+    value: 8,
+    message: 'Password must be at least 8 characters',
+  },
+  pattern: {
+    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/,
+    message: 'Password must include uppercase, lowercase, number, and special character',
+  },
+})}
+
               />
               <button
                 type="button"

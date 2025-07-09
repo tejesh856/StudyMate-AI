@@ -89,10 +89,10 @@ export default function CourseGenerateModal({ onClose, onOpen, setCourseFlowData
 
           {/* Description */}
           <div className="form-control flex flex-col gap-4">
-            <label className="label font-semibold">📝 Description</label>
+            <label className="label font-semibold">📝 Description (optional)</label>
             <textarea
             style={{padding: '0.5rem 0.5rem'}}
-              {...register('description')}
+              {...register('description', { required: false })}
               className="textarea textarea-bordered w-full"
               placeholder="Brief overview of the course"
               rows={3}
@@ -114,13 +114,28 @@ export default function CourseGenerateModal({ onClose, onOpen, setCourseFlowData
             <label className="label font-semibold">📚 Number of Chapters</label>
             <input
             style={{padding: '0rem 0.5rem'}}
-              {...register('numofchapters', { valueAsNumber: true })}
+              {...register('numofchapters',{
+      valueAsNumber: true,
+      required: 'Number of chapters is required',
+      min: {
+        value: 3,
+        message: 'Minimum of 3 chapters required',
+      },
+      max: {
+        value: 10,
+        message: 'Maximum of 10 chapters allowed',
+      },
+    })}
               type="number"
-              min={1}
-              max={20}
               className="input input-bordered w-full"
               placeholder="e.g., 5"
             />
+            {errors.numofchapters && (
+  <span style={{ marginTop: '0.25rem' }} className="text-error text-sm">
+    {errors.numofchapters.message}
+  </span>
+)}
+
           </div>
 
           {/* Include Video */}

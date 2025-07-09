@@ -45,7 +45,6 @@ Topic 2: {topic2}
       format_instructions: parser.getFormatInstructions(),
     });
 
-    console.log("Comparison:", result);
 
     if (result.sameTopic || result.related) {
       return {

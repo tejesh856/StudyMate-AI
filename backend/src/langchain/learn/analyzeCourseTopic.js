@@ -63,7 +63,6 @@ Topic: {topic}
       format_instructions: parser.getFormatInstructions(),
     });
 
-    console.log("analyzeCourseTopic result:", result);
     return result;
   } catch (error) {
     console.error("analyzeCourseTopic error:", error);

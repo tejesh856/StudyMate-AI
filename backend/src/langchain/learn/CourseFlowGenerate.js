@@ -30,10 +30,10 @@ const prompt = ChatPromptTemplate.fromTemplate(`
 
 You are an AI tutor assistant helping students learn simple and complex courses.
 
-Student wants to learn about: "{topicPrompt}"
+Student wants to learn about: {topicPrompt}
 
 Short description of their learning goal:
-"{description}"
+{description}
 
 Subject: {subject}
 Domain or Topic Focus: {domain}
@@ -97,3 +97,35 @@ export const generateCourseFlow = async ({
     throw new Error("Failed to generate course flow");
   }
 };
+
+export const generateCourseDescription = async (topic) => {
+  const descriptionSchema = z.object({
+  description: z.string().min(10, "Description must be at least 10 characters"),
+});
+
+// 2. Structured output parser
+const parser = StructuredOutputParser.fromZodSchema(descriptionSchema);
+
+// 3. Prompt with format instructions
+const descriptionPrompt = ChatPromptTemplate.fromTemplate(`
+You are an AI assistant. Write a short and helpful course description (2–3 lines) for the topic: "{topic}"
+
+Strictly return the output in the following JSON format:
+{format_instructions}
+`);
+
+ const chain = descriptionPrompt.pipe(model).pipe(parser);
+
+  try {
+    const result = await chain.invoke({
+      topic,
+      format_instructions: parser.getFormatInstructions(),
+    });
+
+    return result.description.trim(); // safely access description
+  } catch (err) {
+    console.error("❌ Failed to generate course description:", err);
+    throw new Error("Course description generation failed.");
+  }
+};
+

@@ -5,7 +5,6 @@ import { client } from '../lib/redisClient.js';
 import { io } from '../socket/globalsocket.js';
 import Notifications from '../models/Notifications.model.js';
 import { enrichChapters } from '../lib/utils.js';
-import connectDB from '../config/db.js';
 
 let enrichCourseWorker = null;
 
@@ -29,9 +28,9 @@ const startEnrichCourseWorker = () => {
           createdAt: new Date(),
         });
 
-        const updatedCourse = await Course.findById(courseId).select('studentId topicTitle');
+        const updatedCourse = await Course.findById(courseId);
 
-        await Notifications.create({
+        const notification=await Notifications.create({
           userId: updatedCourse.studentId,
           type: 'course_ready',
           title: 'Course Ready',
@@ -39,8 +38,9 @@ const startEnrichCourseWorker = () => {
           metadata: { courseId },
         });
 
-        io.to(updatedCourse.studentId).emit('course:ready', {
-          courseId,
+        io.to(updatedCourse.studentId.toString()).emit('course:ready', {
+          course:updatedCourse,
+          notification,
           message: `Your course "${updatedCourse.topicTitle}" is ready!`,
         });
 
@@ -64,6 +64,5 @@ enrichCourseWorker.on('failed', (job, err) => {
   console.log('✅ enrichCourseWorker started.');
 };
 export const init = async () => {
-  await connectDB(); // Make sure DB is connected
   startEnrichCourseWorker();
 };

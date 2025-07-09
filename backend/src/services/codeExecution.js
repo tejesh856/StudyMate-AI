@@ -12,7 +12,6 @@ export async function runCodeWithPiston({ language, code, input,version }) {
       ],
       stdin: input || '',
     });
-    console.log('Piston response:', res.data);
     return {
       output: res.data.run.output?.trim(),
       success: true,

@@ -3,7 +3,6 @@ import { axiosInstance } from "@/lib/axios";
 export const GenerateQuiz = async (data) => {
   try {
     const res = await axiosInstance.post("/quiz/generate", data);
-    console.log(res.data);
     return res.data;
   } catch (error) {
     console.log(error.response?.data.error.message);
@@ -15,7 +14,6 @@ export const GenerateQuiz = async (data) => {
 export const GetQuiz = async () => {
   try {
     const res = await axiosInstance.get("/quiz");
-    console.log(res.data);
     return res.data;
   } catch (error) {
     console.log(error.response?.data.error.message);
@@ -27,7 +25,6 @@ export const GetQuiz = async () => {
 export const GetAllQuizes = async () => {
   try {
     const res = await axiosInstance.get(`/quiz/past`);
-    console.log(res.data);
     return res.data;
   } catch (error) {
     console.log(error.response?.data.error.message);
@@ -39,7 +36,6 @@ export const GetAllQuizes = async () => {
 export const LeaveQuiz = async () => {
   try {
     const res = await axiosInstance.post("/quiz/leave");
-    console.log(res.data);
     return res.data;
   } catch (error) {
     console.log(error.response?.data.error.message);
@@ -49,7 +45,6 @@ export const LeaveQuiz = async () => {
 export const GetQuizReview = async (id) => {
   try {
     const res = await axiosInstance.get(`/quiz/review/${id}`);
-    console.log(res.data);
     return res.data;
   } catch (error) {
     console.log(error.response?.data.error.message);
@@ -61,7 +56,6 @@ export const GetQuizReview = async (id) => {
 export const GetQuizTemplate = async (data) => {
   try {
     const res = await axiosInstance.post("/quiz/template", data);
-    console.log(res.data);
     return res.data;
   } catch (error) {
     console.log(error.response?.data.error.message);

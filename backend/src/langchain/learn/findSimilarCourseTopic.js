@@ -47,7 +47,6 @@ Topic 2: {topic2}
       format_instructions: parser.getFormatInstructions(),
     });
 
-    console.log("Comparison with:", course.topicTitle, "→", result);
 
     if (result.sameTopic || result.related) {
       return {

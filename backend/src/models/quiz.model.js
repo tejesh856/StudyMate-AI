@@ -28,6 +28,8 @@ const quizSchema = new mongoose.Schema({
   type: { type: String, enum: ['text', 'pdf'] },
   mcqs: [mcqSchema],
   coding: [codingSchema],
+  subject:{type:String, default:''},
+  language:{type:String, default:''},
   image: {type:String,default:''},
   duration: { type: Number, default: 10 },
   codingLanguages:[{

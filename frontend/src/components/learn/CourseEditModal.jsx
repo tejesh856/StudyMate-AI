@@ -98,12 +98,7 @@ export default function CourseEditModal({ course, onClose,onCourseFlowOpen,setCo
   }
 
   // CASE 3: Regeneration needed
-  console.log('course edit',course);
-  console.log('payload',{
-      ...payload,
-      _id: course._id     // required for backend to identify course
-           // triggers regeneration
-    })
+  
   if (isRegenerationNeeded) {
     generateCourseFlowTrigger({
       ...payload,
@@ -197,7 +192,7 @@ export default function CourseEditModal({ course, onClose,onCourseFlowOpen,setCo
             </div>
             <input
               type="checkbox"
-              className="toggle toggle-primary"
+              className="toggle checked:border-primary checked:bg-primary checked:text-white"
               {...register('includevideo')}
             />
           </label>
@@ -208,9 +203,9 @@ export default function CourseEditModal({ course, onClose,onCourseFlowOpen,setCo
               <span className="label-text">Difficulty</span>
             </div>
             <select {...register('difficulty')} className="select select-bordered">
-  <option value="beginner">Beginner</option>
-  <option value="intermediate">Intermediate</option>
-  <option value="advanced">Advanced</option>
+ <option value="beginner">🟢 Beginner</option>
+              <option value="intermediate">🟡 Intermediate</option>
+              <option value="advanced">🔴 Advanced</option>
 </select>
 
           </label>
@@ -221,12 +216,19 @@ export default function CourseEditModal({ course, onClose,onCourseFlowOpen,setCo
               type="button"
               className="btn btn-ghost"
               onClick={onClose}
-              disabled={isSubmitting}
+              disabled={courseflowisPending||isPending}
             >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+            <button type="submit" className="btn btn-primary" disabled={courseflowisPending||isPending}>
+              {courseflowisPending || isPending ? (
+    <>
+      <span className="loading loading-spinner loading-sm" />
+      Saving...
+    </>
+  ) : (
+    'Save Changes'
+  )}
             </button>
           </div>
         </form>

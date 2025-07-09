@@ -1,4 +1,3 @@
-// analyzeTopic.js
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StructuredOutputParser } from "@langchain/core/output_parsers";
 import { z } from "zod";
@@ -8,6 +7,17 @@ export const analyzeTopic = async (topic) => {
   const schema = z.object({
     valid: z.boolean(),
     isCoding: z.boolean(),
+    subject: z.enum([
+      "Coding",
+      "Math",
+      "Physics",
+      "Chemistry",
+      "Biology",
+      "Law",
+      "Computer Science",
+      "General Knowledge",
+      "Other",
+    ]),
     language: z.string().optional(),
     reason: z.string().optional(),
   });
@@ -15,26 +25,34 @@ export const analyzeTopic = async (topic) => {
   const parser = StructuredOutputParser.fromZodSchema(schema);
 
   const prompt = ChatPromptTemplate.fromTemplate(`
-You are an intelligent AI quiz assistant. A student has typed a topic or a request for generating a quiz.
+You are an intelligent AI quiz assistant. A student has submitted a topic for quiz generation.
 
-Return a JSON object with the following fields:
-- "valid": true if the topic is clear, meaningful, and suitable for generating a quiz; otherwise false.
-- "isCoding": true ONLY if the topic clearly relates to programming concepts, programming languages, or software development (e.g., data structures, algorithms, JavaScript, Python, etc.). False for general computer science topics.
-- "language": (optional) the specific language mentioned (e.g., "JavaScript", "C++", "Python"). Leave it out if not explicitly clear.
-- "reason": (only include if valid is false) Explain why the topic is invalid or unclear.
+You must:
+1. Validate whether the topic is specific and meaningful enough for learning content.
+2. Determine if it is coding-related.
+3. Classify the appropriate subject.
+4. Extract the specific programming language or scientific domain (if present).
 
-### Classification Guidelines:
-- ✅ Treat topics like “C++ basics”, “Python functions”, “Recursion in Java” as coding-related with the relevant language.
-- ❌ Treat topics like “Computer Fundamentals”, “Operating Systems”, “Networking”, “DBMS”, “Software Engineering”, “Computer Architecture” as non-coding topics.
-- ❌ Do NOT assume a language unless it's clearly mentioned in the topic.
-- ✅ Topics like “Promises” or “React lifecycle” imply JavaScript.
-- ✅ Topics like “List comprehension” imply Python.
+Respond only in valid JSON. No markdown, no extra commentary.
 
-Only respond with valid JSON. No markdown, no extra explanation.
+Return:
+- "valid": true/false
+- "isCoding": true ONLY if it's clearly about programming
+- "subject": one of [Coding, Math, Physics, Chemistry, Biology, Law, Computer Science, General Knowledge, Other]
+- "language": (optional) e.g. "C++", "Calculus", "Organic Chemistry"
+- "reason": (if valid is false)
+
+📌 Examples:
+- ✅ "C++ basics" → isCoding: true, language: C++, subject: Coding
+- ✅ "Recursion in JavaScript" → isCoding: true, language: JavaScript, subject: Coding
+- ❌ "DBMS" → isCoding: false, subject: Computer Science, language: DBMS
+- ❌ "Operating Systems" → isCoding: false, subject: Computer Science, language: Operating Systems
+- ✅ "Chemical Equations" → isCoding: false, subject: Chemistry, language: Chemical Equations
+- ✅ "Trigonometry" → valid: true, isCoding: false, subject: Math, language: Trigonometry
 
 Topic: {topic}
-
-{format_instructions}`);
+{format_instructions}
+`);
 
   const chain = prompt.pipe(model).pipe(parser);
 
@@ -43,13 +61,13 @@ Topic: {topic}
       topic,
       format_instructions: parser.getFormatInstructions(),
     });
-    console.log("analyzeTopic result:", result);
     return result;
   } catch (error) {
     console.error("analyzeTopic error:", error);
     return {
       valid: false,
       isCoding: false,
+      subject: "Other",
       reason: "Failed to analyze topic",
     };
   }

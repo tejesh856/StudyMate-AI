@@ -11,7 +11,6 @@ export const generateCourseFlow = async (data) => {
 };
 export const generateCourse = async (data) => {
   try {
-    console.log('data',data);
     const response = await axiosInstance.post(`/learn/generate-course`,data);
     return response.data;
   } catch (error) {
@@ -55,3 +54,13 @@ export const markSubChapterComplete=async(data)=>{
     throw error;
   }
 }
+export const updateProgress=async(data)=>{
+  try {
+    const response = await axiosInstance.post(`/learn/update/progress`,data);
+    return response.data;
+  } catch (error) {
+    console.error("Error generating study materials:", error);
+    throw error;
+  }
+}
+

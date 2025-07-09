@@ -57,8 +57,8 @@ export function middleware(req) {
 export const config = {
   matcher: [
     "/", "/login", "/signup",
-    "/dashboard", "/settings", "/profile", "/quiz",
+    "/dashboard", "/profile", "/quiz",
     "/quiz/attempt/:path*", "/quiz/review/:path*",
-    "/learn/:path*"
+    "/learn/:path*",'/settings'
   ],
 };

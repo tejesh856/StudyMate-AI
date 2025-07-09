@@ -7,8 +7,9 @@ export const generateQuiz = async (
   context,
   isCoding,
   language,
-  numQuestions = 3,
-  difficulty = "medium"
+  subject,
+  numQuestions,
+  difficulty
 ) => {
   const quizSchema = z.object({
     mcqs: z.array(

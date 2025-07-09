@@ -6,6 +6,24 @@ import createError from "http-errors";
 //sign up controller
 export const Signup = async (req, res, next) => {
   const { name, email, password } = req.body;
+  if (!name || !email || !password) {
+      throw createError(400, "Name, email, and password are required.");
+    }
+    const emailRegex =
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (!emailRegex.test(email)) {
+      throw createError(400, "Invalid email format.");
+    }
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
+
+    if (!passwordRegex.test(password)) {
+      throw createError(
+        400,
+        "Password must be at least 8 characters long and contain at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 special character."
+      );
+    }
   try {
     const userExists = await User.findOne({ email: email });
     if (userExists) {
@@ -41,6 +59,24 @@ export const Signup = async (req, res, next) => {
 //login controller
 export const Login = async (req, res, next) => {
   const { email, password } = req.body;
+  if (!email || !password) {
+      throw createError(400, "Email, and password are required.");
+    }
+    const emailRegex =
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (!emailRegex.test(email)) {
+      throw createError(400, "Invalid email format.");
+    }
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
+
+    if (!passwordRegex.test(password)) {
+      throw createError(
+        400,
+        "Password must be at least 8 characters long and contain at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 special character."
+      );
+    }
   try {
     const user = await User.findOne({ email: email });
     if (!user) {
@@ -88,35 +124,80 @@ export const Logout = (req, res, next) => {
 
 //update profile controller
 export const updateProfile = async (req, res, next) => {
+  const { name, email, profilePic } = req.body;
+    if (!name || !email) {
+      throw createError(400, "Name, email, and profilePic are required.");
+    }
+    const emailRegex =
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (!emailRegex.test(email)) {
+      throw createError(400, "Invalid email format.");
+    }
+
   try {
-    const { profilePic } = req.body;
-    const userId = req.user?.id;
+    const user = await User.findById(req.user._id);
 
-    if (!userId) {
-      throw createError.Unauthorized("Unauthorized - Please log in");
+    if (!user) throw createError(404, `User not found`);
+
+    // Check for email conflict
+    if (user.email !== email) {
+      const emailExists = await User.findOne({ email });
+      if (emailExists) {
+        throw createError(400, `Email already in use`);
+      }
     }
 
-    if (!profilePic) {
-      throw createError.BadRequest("Profile picture is required");
-    }
+    user.name = name;
+    user.email = email;
+    user.profilePic = profilePic || user.profilePic;
 
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { profilePic },
-      { new: true, select: "-password" }
-    );
+    await user.save();
 
-    if (!updatedUser) {
-      throw createError.NotFound("User not found");
-    }
-
-    res.json({
-      success: true,
-      message: "Profile updated successfully",
-      user: updatedUser,
+    res.status(200).json({
+      message: 'Profile updated successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        profilePic: user.profilePic,
+        color: user.color,
+      },
     });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+//pasword update
+export const updatePassword = async (req, res, next) => {
+  const { newPassword, confirmPassword } = req.body;
+
+  if (!newPassword || !confirmPassword) {
+    throw createError(400, `Both fields are required`);
+  }
+
+  if (newPassword !== confirmPassword) {
+    throw createError(400, `Passwords do not match`);
+  }
+
+  if (!/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}$/.test(newPassword)) {
+    throw createError(400, `Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 digit`);
+  }
+
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) throw createError(404, `User not found`);
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+
+    await user.save();
+
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (err) {
+    next(err);
   }
 };
 

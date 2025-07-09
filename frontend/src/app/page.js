@@ -1,9 +1,6 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useThemeStore } from '@/store/useThemeStore';
-import { Brain } from 'lucide-react';
-import Navbar from '@/components/Navbar';
 
 const features = [
   {

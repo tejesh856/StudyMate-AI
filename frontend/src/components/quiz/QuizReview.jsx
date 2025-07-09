@@ -13,6 +13,7 @@ export default function QuizReview({ id }) {
     queryKey: ['quiz-review', id],
     queryFn: () => GetQuizReview(id),
     enabled: !!id,
+    refetchOnWindowFocus:false
   });
 
   const [codeVisibility, setCodeVisibility] = useState({});
@@ -22,11 +23,87 @@ export default function QuizReview({ id }) {
     toast.success('Code copied to clipboard!');
   };
 
-  if (isPending) return <div style={{padding:'1.5rem'}} className="text-lg text-center">⏳ Loading review...</div>;
-  if (isError) return <div style={{padding:'1.5rem'}} className="text-center text-red-500 font-medium">❌ Failed to fetch quiz attempt. Please try again later.</div>;
+  if (isPending) {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-6 animate-fade-in">
+        {/* Glowing Loader Ring + Brain Icon */}
+        <div className="relative w-16 h-16">
+          <span className="loading loading-ring loading-lg text-primary absolute inset-0 z-0" />
+          <Brain className="w-16 h-16 text-primary z-10 relative animate-pulse" />
+        </div>
+
+        {/* Text Info */}
+        <div className="text-center flex flex-col gap-1">
+          <h3 className="text-xl font-bold text-primary">Analyzing Your Quiz Attempt...</h3>
+          <p className="text-base-content/70 text-sm">🧠 Fetching insights, scores, and feedback from your session!</p>
+        </div>
+
+        {/* Progress Bar */}
+        <progress className="progress progress-primary w-64" />
+      </div>
+    </div>
+  );
+}
+
+if (isError) {
+  return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6 text-center animate-fade-in">
+      {/* Error Icon */}
+      <div className="bg-error/10 border border-error p-4 rounded-full shadow-lg">
+        <Brain className="w-12 h-12 text-error animate-shake" />
+      </div>
+
+      {/* Text Info */}
+      <div>
+        <h3 className="text-2xl font-bold text-error">Oops! Something went wrong</h3>
+        <p style={{marginTop:'0.25rem'}} className="text-base-content/70 text-sm">
+          ❌ We couldn't fetch your quiz attempt data.<br />Please try refreshing the page or check your internet.
+        </p>
+      </div>
+
+      {/* Retry Button */}
+      <button
+        onClick={() => location.reload()}
+        className="btn btn-error btn-outline gap-2"
+      >
+        🔄 Retry
+      </button>
+    </div>
+  );
+}
+
 
   const attemptData = data?.success && data?.attempts?.length > 0 ? data.attempts[0] : null;
-  if (!attemptData) return <div style={{padding:'1.5rem'}} className="text-center text-red-500 font-medium">❌ No attempt data found.</div>;
+if (!attemptData) {
+  return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6 text-center animate-fade-in">
+      {/* Icon with glow */}
+      <div className="relative">
+        <div className="bg-warning/10 border border-warning p-4 rounded-full shadow-md">
+          <Brain className="w-14 h-14 text-warning animate-pulse" />
+        </div>
+        <span className="loading loading-dots loading-sm text-warning absolute -top-3 -right-3"></span>
+      </div>
+
+      {/* Message */}
+      <div>
+        <h3 className="text-2xl font-bold text-warning">No Attempt Found</h3>
+        <p style={{marginTop:'0.25rem'}} className="text-base-content/70 text-sm">
+          😕 It looks like you haven’t attempted this quiz yet, or something went wrong saving your attempt.
+        </p>
+      </div>
+
+      {/* Action Suggestion */}
+      <button
+        onClick={() => window.history.back()}
+        className="btn btn-outline btn-warning gap-2"
+      >
+        🔙 Go Back
+      </button>
+    </div>
+  );
+}
 
   const {
     quizId,

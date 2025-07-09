@@ -19,10 +19,10 @@ export default function Navbar({ onToggleSidebar }) {
   const { quizData } = useQuizStore();
   const queryClient = useQueryClient();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const {data:notificationsRes,isPending}=useQuery({
+  const {data:notificationsRes,isPending,refetch}=useQuery({
     queryKey:['notifications'],
     queryFn:getNotifications,
-    enabled: !!authUser,
+    enabled:false
   });
 
   const notifications = notificationsRes?.data || [];
@@ -32,9 +32,20 @@ export default function Navbar({ onToggleSidebar }) {
     mutationFn:({id,notification})=>markReadNotifications(id),
     onSuccess:(data,variables)=>{
       const { notification } = variables;
-      console.log('variables',variables);
       if (data.success) {
     const courseId = notification.metadata?.courseId;
+    queryClient.setQueryData(['notifications'], (old) => {
+  if (!old?.data) return old;
+
+  const updatedData = old.data.map((n) =>
+    n._id === notification._id ? { ...n, read: true } : n
+  );
+  return {
+    ...old,
+    data: updatedData,
+  };
+});
+
       if (courseId) {
         router.push(`/learn/${courseId}`);
       }
@@ -52,6 +63,17 @@ export default function Navbar({ onToggleSidebar }) {
   const handleMarkRead = (notification) => {
     markNotificationTrigger({ id: notification._id, notification });
   };
+  const handleDropdownToggle = () => {
+  setDropdownOpen((prev) => {
+    const next = !prev;
+    if (next) {
+      // ✅ Actively refetch notifications when dropdown opens
+      refetch();
+    }
+    return next;
+  });
+};
+
 
 
   const scrollToSection = (id) => {
@@ -108,12 +130,7 @@ export default function Navbar({ onToggleSidebar }) {
             <button
               //tabIndex={0}
               className="btn btn-ghost btn-circle relative"
-              onClick={() => 
-              {
-                console.log('clicked bell');
-                setDropdownOpen((prev) => !prev)
-              }
-              }
+              onClick={handleDropdownToggle}
             >
               <Bell className="w-6 h-6" />
               {unreadCount > 0 && (

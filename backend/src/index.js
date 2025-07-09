@@ -10,6 +10,7 @@ import authRoutes from "./routes/auth.route.js";
 import quizRoutes from "./routes/quiz.route.js";
 import learnRoutes from "./routes/learn.route.js";
 import notificationRoutes from './routes/notification.route.js';
+import dashboardRoutes from './routes/dashboard.route.js';
 import { setupSocket } from './socket/index.js';
 import connectDB from './config/db.js';
 import { setSocketInstance } from './socket/globalsocket.js';
@@ -46,6 +47,7 @@ const startServer = async () => {
   app.use("/api/quiz", quizRoutes);
   app.use("/api/learn", learnRoutes);
   app.use("/api/notifications", notificationRoutes);
+  app.use("/api", dashboardRoutes);
 
 
   // Not found handler

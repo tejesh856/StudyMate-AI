@@ -1,32 +1,42 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, Video } from 'lucide-react';
 import toast from 'react-hot-toast';
-//import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { generateCourse } from '@/services/learn';
+import { generateCourse, generateCourseFlow } from '@/services/learn';
+import useCourseStore from '@/store/useCourseStore';
 
 export default function CourseFlowModal({ courseFlowData, onClose }) {
-  //const router = useRouter();
   const queryClient = useQueryClient();
+  const {setCourseFlowData,suggestionPayload,clearSuggestionPayload}=useCourseStore();
+
+   const { mutate: generateCourseFlowTrigger, isPending:isgenerateCourseFlowPending } = useMutation({
+    mutationFn: generateCourseFlow,
+    onSuccess: (data) => {
+      toast.success('🚀 Course generated successfully!');
+      setCourseFlowData(data.data);
+      clearSuggestionPayload();
+    },
+    onError: (error) => {
+      toast.error('❌ Failed to generate course. Try again!');
+      console.error('Error:', error);
+      clearSuggestionPayload();
+    },
+  });
+
 
 
   const { mutate: generateStudyMaterialsTrigger, isPending } = useMutation({
     mutationFn: generateCourse,
     onSuccess: (data) => {
       const generatedCourse = data.data;
-      console.log('generated course',generatedCourse);
       queryClient.setQueryData(['courses'], (oldData) => {
         if (!oldData.data) return [generatedCourse];
-        console.log('old data',oldData);
-        console.log('new data',generatedCourse);
 
         const exists = oldData.data.find((c) => c._id === generatedCourse._id);
-        console.log('exist',exists);
       if (exists) {
         const updatedData = oldData.data.map((c) =>
       c._id === generatedCourse._id ? { ...c, status: 'pending' } : c
     );
-    console.log('updated data',updatedData);
     return { ...oldData, data: updatedData };
       }
 
@@ -35,20 +45,9 @@ export default function CourseFlowModal({ courseFlowData, onClose }) {
     data: [...oldData.data, { ...generatedCourse, status: 'pending' }],
   };
       });
-      /*queryClient.setQueryData(['notifications'], (old = []) => [
-        {
-          title: 'Course Generation Started',
-          message: `Your course "${generatedCourse.topicTitle}" is being generated.`,
-          createdAt: new Date(),
-          read: false,
-          type: 'course_started',
-        },
-        ...old.data,
-      ]);*/
 
       toast.success('🚀 Course generation started');
       onClose();
-      //router.push(`/learn/${data.data._id}`);
     },
     onError: (error) => {
       toast.error('❌ Failed to generate study materials. Try again!');
@@ -56,8 +55,19 @@ export default function CourseFlowModal({ courseFlowData, onClose }) {
     },
   });
 
+  useEffect(() => {
+    if (suggestionPayload) {
+      generateCourseFlowTrigger({
+        topicTitle: suggestionPayload.topic,
+        description: suggestionPayload.description,
+        difficulty: suggestionPayload.difficulty,
+        numofchapters: suggestionPayload.numofchapters,
+        includevideo: suggestionPayload.includevideo,
+      });
+    }
+  }, [suggestionPayload]);
+
   const handleGenerateStudyMaterial = () => {
-  console.log('course flow data', courseFlowData);
 
   // ✅ Validate input
   if (
@@ -89,7 +99,6 @@ export default function CourseFlowModal({ courseFlowData, onClose }) {
   }
 
   // 🔁 Call API with optional regenerate flag
-  console.log('coursepayload',coursePayload);
   generateStudyMaterialsTrigger({
     course: coursePayload,
   });
@@ -99,6 +108,41 @@ export default function CourseFlowModal({ courseFlowData, onClose }) {
   const handleCancelCourseFlow = () => {
     onClose();
   };
+
+  if (isgenerateCourseFlowPending) {
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-md flex items-center justify-center">
+      <div style={{padding:'2rem'}} className="bg-base-100 border border-primary/40 shadow-2xl rounded-3xl w-[90%] max-w-lg flex flex-col items-center gap-6 animate-fade-in">
+        {/* Animated Icon with Glow Ring */}
+        <div className="relative w-16 h-16">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="loading loading-ring loading-lg text-primary"></span>
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Video className="w-10 h-10 text-primary animate-bounce" />
+          </div>
+        </div>
+
+        {/* Heading */}
+        <h2 className="text-xl font-bold text-primary text-center">
+          Crafting Your Learning Journey...
+        </h2>
+
+        {/* Subtext */}
+        <p className="text-sm text-base-content/70 text-center max-w-xs">
+          ✨ Hold tight! We’re designing your course flow with chapters, subchapters, and videos tailored just for you.
+        </p>
+
+        {/* Progress Bar */}
+        <progress className="progress progress-primary w-full" />
+      </div>
+    </div>
+  );
+}
+
+
+
+  if (!courseFlowData) return null;
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-md flex items-center justify-center p-4">
       <div style={{padding: '1rem'}} className="modal-box w-full opacity-100 max-w-5xl bg-base-100 border border-primary/40 shadow-2xl rounded-3xl relative max-h-[90vh] overflow-hidden flex flex-col">

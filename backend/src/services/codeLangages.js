@@ -17,7 +17,6 @@ export async function CodeLanguages(detectedLang = null) {
         )
       );
     }
-    console.log("Filtered Languages:", filteredLanguages);
     return {
       output: filteredLanguages,
       success: true,

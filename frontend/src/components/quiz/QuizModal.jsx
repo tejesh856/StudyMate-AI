@@ -2,18 +2,13 @@
 
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
 import { Sparkles, X } from 'lucide-react';
 
 export default function QuizModal({ onClose }) {
-  const { register, handleSubmit, reset } = useForm();
+  const { register, handleSubmit, reset,formState: { errors } } = useForm();
   const router = useRouter();
 
   const onSubmit = ({ topic, difficulty, numQuestions }) => {
-    if (!topic.trim()) {
-      toast.error('Topic is required!');
-      return;
-    }
     router.push(`/quiz/attempt?topic=${topic}&difficulty=${difficulty}&numQuestions=${numQuestions}`);
     onClose();
   };
@@ -42,11 +37,14 @@ export default function QuizModal({ onClose }) {
               <span className="label font-semibold">📘 Topic</span>
             </label>
             <input
-              {...register('topic')}
+              {...register('topic', {
+                required: 'Topic is required',
+              })}
               style={{padding:'0 0.5rem'}}
               placeholder="Enter topic (e.g. DBMS)"
               className="input input-bordered w-full"
             />
+            {errors.topic && <p style={{marginTop:'0.25rem'}} className="text-error text-sm">{errors.topic.message}</p>}
           </div>
 
           {/* Difficulty Select */}
@@ -54,7 +52,7 @@ export default function QuizModal({ onClose }) {
             <label style={{marginBottom:'0.5rem'}} className="label">
               <span className="label-text font-semibold">📈 Difficulty</span>
             </label>
-            <select style={{padding:'0 0.5rem'}} {...register('difficulty')} defaultValue="medium" className="select select-bordered w-full">
+            <select style={{padding:'0 0.5rem'}} {...register('difficulty', { required: true })} defaultValue="medium" className="select select-bordered w-full">
               <option value="easy">🟢 Easy</option>
               <option value="medium">🟡 Medium</option>
               <option value="hard">🔴 Hard</option>
@@ -67,14 +65,24 @@ export default function QuizModal({ onClose }) {
               <span className="label-text font-semibold">🔢 Number of Questions</span>
             </label>
             <input
-              {...register('numQuestions')}
+              {...register('numQuestions', {
+                required: 'Number of questions is required',
+                valueAsNumber: true,
+                min: {
+                  value: 3,
+                  message: 'Minimum of 3 questions required',
+                },
+                max:{
+                  value:10,
+                  message:'Maximum of 10 questions allowed'
+                }
+              })}
               type="number"
-              min={1}
-              max={50}
-              style={{padding:'0 0.5rem'}}
+              style={{padding:'0rem 0.5rem'}}
               placeholder="Number of Questions"
               className="input input-bordered w-full"
             />
+            {errors.numQuestions && <p style={{marginTop:'0.25rem'}} className="text-error text-sm">{errors.numQuestions.message}</p>}
           </div>
 
           {/* Buttons */}

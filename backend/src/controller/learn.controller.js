@@ -1,18 +1,29 @@
 import createError from "http-errors";
 import { enrichCourseQueue } from "../jobs/enrichCourseQueue.js";
 import { analyzeCourseTopic } from "../langchain/learn/analyzeCourseTopic.js";
-import { generateCourseFlow } from "../langchain/learn/CourseFlowGenerate.js";
+import { generateCourseDescription, generateCourseFlow } from "../langchain/learn/CourseFlowGenerate.js";
 import { extractCourseKeyword } from "../langchain/learn/extractCourseKeyword.js";
 import { findSimilarCourseTopic } from "../langchain/learn/findSimilarCourseTopic.js";
 import Course from "../models/Course.model.js";
 import Progress from "../models/Progress.model.js";
 import { generateImageFromTopic } from "../services/imageGeneration.js";
 export const CourseFlowGenerate = async (req, res, next) => {
-  const { topicTitle, description, difficulty, numofchapters, includevideo, _id = null } = req.body;
+  const { topicTitle, description='', difficulty, numofchapters, includevideo, _id = null } = req.body;
   const studentId = req.user._id;
 
-  if (!topicTitle || !difficulty || !numofchapters || includevideo === undefined) {
-    throw createError(400, "Missing required fields")
+  if (
+    !topicTitle ||
+    !difficulty ||
+    typeof includevideo !== 'boolean' ||
+    numofchapters === undefined ||
+    numofchapters === null
+  ) {
+    throw createError(400, 'Missing required fields');
+  }
+
+  // ✅ Validate chapter count range
+  if (isNaN(numofchapters) || numofchapters < 3 || numofchapters > 10) {
+    throw createError(400, 'numofchapters must be a number between 3 and 10');
   }
 
   try {
@@ -63,10 +74,11 @@ export const CourseFlowGenerate = async (req, res, next) => {
       domain=analysis.languageOrDomain;
     }
 
+    const descriptionInput=description||await generateCourseDescription(topicTitle)
     // Generate new course flow
     const flow = await generateCourseFlow({
       topicTitle,
-      description,
+      description:descriptionInput,
       difficulty,
       numofchapters,
       includevideo,
@@ -108,7 +120,7 @@ export const generateCourseMaterial = async (req, res, next) => {
     difficulty,
     numofchapters,
     includevideo,
-    chapters,
+    chapters:Chapters,
   } = course;
   try {
     // 🔁 If courseId exists → regenerate course
@@ -120,7 +132,7 @@ export const generateCourseMaterial = async (req, res, next) => {
 
       enrichCourseQueue.add('enrichCourse', {
         courseId,
-        chapters,
+        chapters:Chapters,
         difficulty: existingCourse.difficulty,
         subject: existingCourse.subject,
         domain: existingCourse.languageOrDomain,
@@ -133,10 +145,23 @@ export const generateCourseMaterial = async (req, res, next) => {
       existingCourse.difficulty = difficulty;
       existingCourse.includevideo = includevideo;
       existingCourse.numofchapters = numofchapters;
+      existingCourse.chapters=[];
+      existingCourse.markModified('chapters');
+      existingCourse.status = 'pending';
 
       await existingCourse.save();
-
-      return res.status(200).json({ success: true, data: existingCourse });
+      const { chapters, ...courseDataWithoutChapters } = existingCourse.toObject();
+      await Progress.findOneAndUpdate(
+      { courseId, studentId },
+      {
+        completedSubChapters: [],
+        lastChapterIdx: 0,
+        lastSubChapterId: null,
+        lastVisitedAt: new Date(),
+      },
+      { new: true, upsert: true }
+    );
+      return res.status(200).json({ success: true, data: courseDataWithoutChapters });
     }
 
     // 🆕 New Course Flow
@@ -174,7 +199,7 @@ export const generateCourseMaterial = async (req, res, next) => {
     });
     enrichCourseQueue.add("enrichCourse", {
       courseId: newCourse._id.toString(),
-      chapters,
+      chapters:Chapters,
       difficulty,
       subject: analysis.subject,
       domain: analysis.languageOrDomain,
@@ -225,6 +250,9 @@ export const getCourses = async (req, res, next) => {
         progress: {
           completedSubChapters,
           percentage,
+          lastChapterIdx: progress?.lastChapterIdx ?? 0,
+      lastSubChapterId: progress?.lastSubChapterId ?? null,
+      lastVisitedAt: progress?.lastVisitedAt ?? null,
         },
       };
     });
@@ -265,6 +293,9 @@ export const getCourse = async (req, res) => {
       progress: {
         completedSubChapters: progress?.completedSubChapters || [],
         progressId: progress?._id || null,
+        lastChapterIdx: progress?.lastChapterIdx ?? 0,
+        lastVisitedAt: progress?.lastVisitedAt ?? null,
+        lastSubChapterId: progress?.lastSubChapterId ?? null,
       },
     };
 
@@ -321,4 +352,30 @@ export const markSubChapterComplete = async (req, res) => {
   }
 };
 
+export const updateCourseProgress = async (req, res) => {
+  const studentId = req.user._id;
+  const { courseId, chapterIdx, subChapterId } = req.body;
 
+  if (!courseId || chapterIdx === undefined) {
+    return res.status(400).json({ success: false, message: 'Missing required fields' });
+  }
+
+  try {
+    const updatedProgress = await Progress.findOneAndUpdate(
+      { studentId, courseId },
+      {
+        $set: {
+          lastChapterIdx: chapterIdx,
+          lastSubChapterId: subChapterId || null,
+          lastVisitedAt: new Date(),
+        },
+      },
+      { upsert: true, new: true }
+    );
+
+    res.status(200).json({ success: true, data: updatedProgress });
+  } catch (err) {
+    console.error("Error updating progress:", err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};

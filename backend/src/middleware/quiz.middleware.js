@@ -4,7 +4,6 @@ import Quiz from "../models/quiz.model.js";
 export const protectQuizRoute = async (req, res, next) => {
   try {
     const token = req.cookies.quizToken;
-    console.log("Token:", token);
 
     // Check if token exists
     if (!token) {
@@ -13,7 +12,6 @@ export const protectQuizRoute = async (req, res, next) => {
 
     // Verify the token
     const decoded = jwt.verify(token, process.env.QUIZ_SECRET);
-    console.log("Decoded Token:", decoded.quizId);
     if (!decoded || !decoded.quizId) {
       throw createError.Unauthorized("Unauthorized - Invalid Token");
     }

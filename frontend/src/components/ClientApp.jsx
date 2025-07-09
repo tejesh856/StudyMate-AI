@@ -2,27 +2,27 @@
 
 import { CheckAuth } from "@/services/auth";
 import { useAuthStore } from "@/store/useAuthStore";
-import useQuizStore from "@/store/useQuizStore";
 import { useThemeStore } from "@/store/useThemeStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import { Brain } from "lucide-react";
+import { socket } from "@/lib/socket";
 
 export default function ClientApp({ children }) {
   const { theme, initTheme } = useThemeStore();
   const { authUser, setAuthUser } = useAuthStore();
-  const { quizData } = useQuizStore();
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-
-
-  const { isPending, data, isError, refetch } = useQuery({
+  const { isPending, data, isError } = useQuery({
     queryKey: ["checkAuth"],
     queryFn: CheckAuth,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 60 * 24, // 1 day
+  refetchOnWindowFocus: true,
+  retry: false,
   });
+  
 
   useEffect(() => {
     initTheme();
@@ -35,10 +35,19 @@ export default function ClientApp({ children }) {
       setAuthUser(null);
     }
   }, [data, isError, setAuthUser]);
+useEffect(() => {
+  if (authUser?._id && socket.connected) {
+    socket.emit('join_user_room', authUser._id);
+  } else {
+    socket.on('connect', () => {
+      if (authUser?._id) {
+        socket.emit('join_user_room', authUser._id);
+      }
+    });
+  }
+}, [authUser]);
 
-  useEffect(() => {
-    refetch();
-  }, [authUser, refetch]);
+
 
   if (isPending && !authUser) {
     return (

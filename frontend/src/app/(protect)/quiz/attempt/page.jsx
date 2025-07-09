@@ -46,5 +46,29 @@ export default function QuizGeneratePage() {
     });
   }, [topic, difficulty, numQuestions, quizData]);
 
-  return isPending ? <div className="text-center p-8">Loading Quiz...</div> : null;
+return isPending ? (
+  <div className="min-h-[80vh] flex items-center justify-center">
+    <div className="text-center max-w-md flex flex-col gap-6 animate-fade-in">
+      <div className="flex justify-center">
+        <div className="loading loading-ring loading-lg text-primary scale-150" />
+      </div>
+
+      <h2 className="text-2xl font-bold text-primary">
+        Generating Your Quiz...
+      </h2>
+
+      <p className="text-base text-base-content/70">
+        Please wait while we prepare your questions. This will only take a few seconds!
+      </p>
+
+      <div className="flex justify-center">
+        <progress className="progress progress-primary w-56 animate-pulse" />
+      </div>
+
+      <div className="text-sm italic text-base-content/50">
+        🧠 Fueling up the brain cells...
+      </div>
+    </div>
+  </div>
+) : null;
 }

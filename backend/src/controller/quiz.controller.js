@@ -15,9 +15,23 @@ import createError from 'http-errors';
 export const QuizGenerate = async (req, res, next) => {
   try {
     const { topic, difficulty = 'medium', numQuestions = 3 } = req.body;
+    console.log('body',req.body)
 
-    if (!topic || topic.trim() === '') {
-      throw createError(400, `Topic is required`)
+    if (!topic || typeof topic !== 'string' || topic.trim() === '') {
+      throw createError(400, '❌ Topic is required and must be a non-empty string.');
+    }
+
+    if (!difficulty || typeof difficulty !== 'string') {
+      throw createError(400, '❌ Difficulty is required.');
+    }
+
+    if (
+      numQuestions === undefined ||
+      typeof numQuestions !== 'number' ||
+      Number.isNaN(numQuestions) ||
+      numQuestions < 3 || numQuestions>10
+    ) {
+      throw createError(400, '❌ Number of questions must be a number and at least 3 and less than 10.');
     }
 
     const trimmedTopic = topic.trim();
@@ -30,6 +44,7 @@ export const QuizGenerate = async (req, res, next) => {
     }
 
     const isCoding = analysis.isCoding === true;
+    const subject = analysis.subject;
     const language = analysis.language?.trim() || null;
 
     // 🖼️ Check for image from similar topic
@@ -48,7 +63,7 @@ export const QuizGenerate = async (req, res, next) => {
     const quizImage = matchedImage || await generateImageFromTopic(imagePrompt,prompt,true);
 
     // 🧠 Generate quiz content
-    const quiz = await generateQuiz(trimmedTopic, isCoding, language, numQuestions, difficulty);
+    const quiz = await generateQuiz(trimmedTopic, isCoding, numQuestions, difficulty, subject, language);
 
     let languageList = [];
     let codeTemplates = [];
@@ -91,6 +106,8 @@ export const QuizGenerate = async (req, res, next) => {
       difficulty,
       numQuestions,
       type: 'text',
+      subject:subject,
+      language: language,
       mcqs: quiz.mcqs,
       coding: quiz.coding || [],
       image: quizImage,
